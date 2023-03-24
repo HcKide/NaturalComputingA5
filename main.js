@@ -58,8 +58,9 @@ class Particle{
         var avg_d = {x: 0, y:0}; // average dispersion to repel particles that are too close
 
         var angle = 0;
+        var neighbours = Scene.neighbours(this.pos);
 
-        for (let n of Scene.neighbours(this.pos)) {
+        for (let n of neighbours) {
             // average position calculation
             avg_p.x += n.pos.x;
             avg_p.y += n.pos.y;
@@ -82,7 +83,12 @@ class Particle{
         avg_sin /= N; avg_cos /= N;
         avg_p.x /= N; avg_p.y /= N;
         avg_d.x /= N; avg_d.y /= N;
-        avg_d.x *= this.dispersionMultiplier; avg_d.y *= this.dispersionMultiplier;
+
+        // factors that determine the dispersion for boids
+        // it becomes stronger with larger boids (high number of neighbours) because otherwise the cohesion of too many
+        // particles overpowers the dispersion, but now the dispersion scales with the amount of neighbours
+        avg_d.x *= this.dispersionMultiplier * neighbours.length*0.2;
+        avg_d.y *= this.dispersionMultiplier * neighbours.length*0.2;
 
         if (N == 0) {
             console.log("N is zero")
