@@ -14,13 +14,18 @@ let Scene = {
     }
 }
 
+const centerX = Scene.w / 2;
+const centerY = Scene.h / 2;
+
+const trackEnforcement = 2;
+
 let sizeBig = {w: 600, h: 400} // sizes for larger outer rectangle
 
 let sizeSmall = {w: 400, h: 250} // sizes for small inner rectangle
 
 window.onload = function setup() {
 	console.log("Start");
-	let ParticleCount = 200;
+	let ParticleCount = 400;
 
 	createCanvas(Scene.w, Scene.h);
 	// create particles
@@ -64,8 +69,8 @@ class Particle{
 
         var angle = 0;
         var neighbours = Scene.neighbours(this.pos);
-//        inTrack(this); // apply direction pressure based on location relative to track
-        const [xPressure, yPressure] = clockWise(this);
+        const [trackPressureX, trackPressureY] = inTrack(this); // apply direction pressure based on location relative to track
+        const [xPressure, yPressure] = clockWise(this); // apply clockwise pressure
 
         for (let n of neighbours) {
             // average position calculation
@@ -94,8 +99,8 @@ class Particle{
         // factors that determine the dispersion for boids
         // it becomes stronger with larger boids (high number of neighbours) because otherwise the cohesion of too many
         // particles overpowers the dispersion, but now the dispersion scales with the amount of neighbours
-        avg_d.x *= this.dispersionMultiplier * neighbours.length*0.2;
-        avg_d.y *= this.dispersionMultiplier * neighbours.length*0.2;
+        avg_d.x *= this.dispersionMultiplier * neighbours.length * 0.2;
+        avg_d.y *= this.dispersionMultiplier * neighbours.length * 0.2;
 
         if (N == 0) {
             console.log("N is zero")
@@ -112,8 +117,8 @@ class Particle{
         }
 
         // update direction with all values
-        this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure;
-        this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure;
+        this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
+        this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
 
         // calculate new position with direction
         this.pos.x += this.dir.x
@@ -155,10 +160,6 @@ function makeRaceTrack() {
 function clockWise(particle) {
     // based on location relative to center of canvas, apply pressure to rotate clockwise
     // pressure becomes larger with a larger distance from center
-
-    var centerX = Scene.w / 2;
-    var centerY = Scene.h / 2;
-
     var xPressure = 0;
     var yPressure = 0;
 
@@ -193,6 +194,8 @@ function clockWise(particle) {
 
 function inTrack(particle) {
     // sees whether particle is in the racetrack
+    var xPressure = 0;
+    var yPressure = 0;
 
     // in large rectangle at all
     var leftUpPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
@@ -208,18 +211,48 @@ function inTrack(particle) {
     if (particle.pos.x >= leftUpPointLarge.x && particle.pos.x <= rightUpPointLarge.x &&
     particle.pos.y >= leftUpPointLarge.y && particle.pos.y <= leftDownPointLarge.y) {
 
-            // check whether particle is in inner rectangle, apply outwards pressure
+            // check whether particle is in inner rectangle
             if (particle.pos.x >= leftUpPointSmall.x && particle.pos.x <= rightUpPointSmall.x &&
         particle.pos.y >= leftUpPointSmall.y && particle.pos.y <= leftDownPointSmall.y) {
+                // apply outwards pressure
+                distanceX = Math.abs(particle.pos.x - centerX);
+                if (particle.pos.x >= centerX) {
+                    xPressure = distanceX;
+                }
+                else {
+                    xPressure = -distanceX;
+                }
 
+                distanceY = Math.abs(particle.pos.y - centerY);
+                if (particle.pos.y >= centerY) {
+                    yPressure = distanceY;
+                }
+                else {
+                    yPressure = -distanceY;
+                }
         }
     }
     else {
         // outside of rectangles, apply inwards pressure
+        // apply outwards pressure
+        distanceX = Math.abs(particle.pos.x - centerX);
+        if (particle.pos.x >= centerX) {
+            xPressure = -distanceX;
+        }
+        else {
+            xPressure = distanceX;
+        }
 
+        distanceY = Math.abs(particle.pos.y - centerY);
+        if (particle.pos.y >= centerY) {
+            yPressure = -distanceY;
+        }
+        else {
+            yPressure = distanceY;
+        }
     }
 
-
+    return [xPressure/centerX, yPressure/centerY]
 }
 
 function outputToText() {
