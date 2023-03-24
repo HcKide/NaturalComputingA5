@@ -16,7 +16,7 @@ let Scene = {
 
 window.onload = function setup() {
 	console.log("Start");
-	let ParticleCount = 200;
+	let ParticleCount = 500;
 
 	createCanvas(Scene.w, Scene.h);
 	// create particles
@@ -30,6 +30,10 @@ class Particle{
     constructor() {
         // speed multiplier that can be adjusted also based on how often the draw function is called
         this.speedMultiplier = 2;
+        // multiplier that dampens the effect of cohesion, vary from 0 to 1
+        this.cohesionMultiplier = 0.9;
+        // regulates distances between cells in a boid, higher means larger distance
+        this.dispersionMultiplier = 200;
 
         this.pos = {
             x : Math.random() * Scene.w,
@@ -44,28 +48,64 @@ class Particle{
     }
 
     step() {
+        // alignment done, still need to add separation (avoid crowding) and cohesion (move towards average position of local agents)
+
+
         // if N = 0, sometimes particles will not be drawn when there are no neighbours because it tries to divide by 0 which is not possible
-        var N=1;
+        var N=0;
         var selfAngle = Math.atan2(this.dir.y, this.dir.x);
-        var avg_sin = Math.sin(selfAngle);
-        var avg_cos = Math.cos(selfAngle);
+        var avg_sin = 0 //Math.sin(selfAngle);
+        var avg_cos = 0 //Math.cos(selfAngle);
+
+        var avg_p = {x:0, y:0}; // average position of neighbours
+        var avg_d = {x: 0, y:0}; // average dispersion to repel particles that are too close
 
         var angle = 0;
 
         for (let n of Scene.neighbours(this.pos)) {
+            // average position calculation
+            avg_p.x += n.pos.x;
+            avg_p.y += n.pos.y;
+
+            // average dispersion calculation
+            if (n != this) {
+                let away = {x:(this.pos.x - n.pos.x), y: (this.pos.y - n.pos.y)}
+                let vectorLengthSq = Math.pow(away.x, 2) + Math.pow(away.y, 2)
+
+                avg_d.x += away.x/vectorLengthSq; // scale by squared magnitude of vector
+                avg_d.y += away.y/vectorLengthSq;
+            }
+            // average angle calculation
             angle = Math.atan2(n.dir.y, n.dir.x);
             avg_sin += Math.sin(angle);
             avg_cos += Math.cos(angle);
             N++;
         }
-        avg_sin /= N; avg_cos /= N
+        // averaging
+        avg_sin /= N; avg_cos /= N;
+        avg_p.x /= N; avg_p.y /= N;
+        avg_d.x /= N; avg_d.y /= N;
+        avg_d.x *= this.dispersionMultiplier; avg_d.y *= this.dispersionMultiplier;
+
+        if (N == 0) {
+            console.log("N is zero")
+        }
+
+        // average angle calc
         let avg_angle = Math.atan2(avg_sin, avg_cos);
-        avg_angle += (Math.random() - 0.5);
+        avg_angle += (Math.random() - 0.5); // random noise to angle
 
-        this.dir.x = Math.cos(avg_angle);
-        this.dir.y = Math.sin(avg_angle);
+        // cohesion calc
+        let cohesion = {
+            x: (avg_p.x - this.pos.x)*this.cohesionMultiplier,
+            y: (avg_p.y - this.pos.y)*this.cohesionMultiplier
+        }
 
-        // calculate new position
+        // update direction with all values
+        this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x;
+        this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y;
+
+        // calculate new position with direction
         this.pos.x += this.dir.x
         this.pos.y += this.dir.y
 
