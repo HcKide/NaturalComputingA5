@@ -48,9 +48,6 @@ class Particle{
     }
 
     step() {
-        // alignment done, still need to add separation (avoid crowding) and cohesion (move towards average position of local agents)
-
-
         // if N = 0, sometimes particles will not be drawn when there are no neighbours because it tries to divide by 0 which is not possible
         var N=0;
         var selfAngle = Math.atan2(this.dir.y, this.dir.x);
