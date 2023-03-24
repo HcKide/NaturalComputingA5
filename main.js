@@ -1,11 +1,11 @@
 
 let Scene = {
     w:800, h:800, swarm : [], vicinity : 25,
-    neighbours : function(particle) {
+    neighbours : function(particlePos) {
     // can also be done with k-d tree
         let r = []
         for (let p of this.swarm) {
-            var distance = Math.sqrt(Math.pow(p.pos.x - particle.x, 2) + Math.pow(p.pos.y - particle.y, 2));
+            var distance = Math.sqrt(Math.pow(p.pos.x - particlePos.x, 2) + Math.pow(p.pos.y - particlePos.y, 2));
             if (distance <= this.vicinity) {
                 r.push(p)
             }
@@ -64,6 +64,8 @@ class Particle{
 
         var angle = 0;
         var neighbours = Scene.neighbours(this.pos);
+//        inTrack(this); // apply direction pressure based on location relative to track
+        const [xPressure, yPressure] = clockWise(this);
 
         for (let n of neighbours) {
             // average position calculation
@@ -110,8 +112,8 @@ class Particle{
         }
 
         // update direction with all values
-        this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x;
-        this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y;
+        this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure;
+        this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure;
 
         // calculate new position with direction
         this.pos.x += this.dir.x
@@ -148,6 +150,76 @@ function makeRaceTrack() {
     ctx.fillStyle = "white"; // set the fill color
     // draw the inner rectangle
     ctx.fillRect((Scene.w/2) - sizeSmall.w/2, (Scene.h/2) - sizeSmall.h/2, sizeSmall.w, sizeSmall.h);
+}
+
+function clockWise(particle) {
+    // based on location relative to center of canvas, apply pressure to rotate clockwise
+    // pressure becomes larger with a larger distance from center
+
+    var centerX = Scene.w / 2;
+    var centerY = Scene.h / 2;
+
+    var xPressure = 0;
+    var yPressure = 0;
+
+    var distanceX = 0;
+    var distanceY = 0;
+
+    // x location, right side of center means downwards, left side means upwards
+    if (particle.pos.x >= centerX) {
+        // particle right of center (or middle)
+        distanceX = Math.abs(particle.pos.x - centerX)
+        yPressure = distanceX
+    }
+    else {
+        // particle left of center
+        distanceX = Math.abs(particle.pos.x - centerX)
+        yPressure = -distanceX
+    }
+
+    // y location, above means right, below means left
+    if (particle.pos.y >= centerY) {
+        // particle below center (or middle)
+        distanceY = Math.abs(particle.pos.y - centerY)
+        xPressure = -distanceY
+    }
+    else {
+        // particle above center
+        distanceY = Math.abs(particle.pos.y - centerY)
+        xPressure = distanceY
+    }
+    return [xPressure/centerX, yPressure/centerY]
+}
+
+function inTrack(particle) {
+    // sees whether particle is in the racetrack
+
+    // in large rectangle at all
+    var leftUpPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
+    var rightUpPointLarge = {x: (Scene.w/2) + sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
+    var leftDownPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) + sizeBig.h/2}
+
+    // in small rectangle
+    var leftUpPointSmall = {x: (Scene.w/2) - sizeSmall.w/2, y: (Scene.h/2) - sizeSmall.h/2}
+    var rightUpPointSmall = {x: (Scene.w/2) + sizeSmall.w/2, y: (Scene.h/2) - sizeSmall.h/2}
+    var leftDownPointSmall = {x: (Scene.w/2) - sizeSmall.w/2, y: (Scene.h/2) + sizeSmall.h/2}
+
+    // checks whether particle is within bounds of outer rectangle
+    if (particle.pos.x >= leftUpPointLarge.x && particle.pos.x <= rightUpPointLarge.x &&
+    particle.pos.y >= leftUpPointLarge.y && particle.pos.y <= leftDownPointLarge.y) {
+
+            // check whether particle is in inner rectangle, apply outwards pressure
+            if (particle.pos.x >= leftUpPointSmall.x && particle.pos.x <= rightUpPointSmall.x &&
+        particle.pos.y >= leftUpPointSmall.y && particle.pos.y <= leftDownPointSmall.y) {
+
+        }
+    }
+    else {
+        // outside of rectangles, apply inwards pressure
+
+    }
+
+
 }
 
 function outputToText() {
