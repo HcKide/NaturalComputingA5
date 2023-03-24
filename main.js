@@ -14,15 +14,20 @@ let Scene = {
     }
 }
 
+let sizeBig = {w: 600, h: 400} // sizes for larger outer rectangle
+
+let sizeSmall = {w: 400, h: 250} // sizes for small inner rectangle
+
 window.onload = function setup() {
 	console.log("Start");
-	let ParticleCount = 500;
+	let ParticleCount = 200;
 
 	createCanvas(Scene.w, Scene.h);
 	// create particles
 	for (let i = 0; i < ParticleCount; i++) {
 	    Scene.swarm.push(new Particle())
 	}
+
 	draw();
 }
 
@@ -123,11 +128,26 @@ class Particle{
     draw() {
         var canvas = document.getElementById("canvas");
         var ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = "black";
         ctx.beginPath();
         ctx.arc(this.pos.x, this.pos.y, 5, 0, 2 * Math.PI);
         ctx.fill();
         this.step();
     }
+}
+
+function makeRaceTrack() {
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "grey";
+    // draw the outer rectangle
+    ctx.fillRect((Scene.w/2) - sizeBig.w/2, (Scene.h/2) - sizeBig.h/2, sizeBig.w, sizeBig.h);
+
+    ctx.fillStyle = "white"; // set the fill color
+    // draw the inner rectangle
+    ctx.fillRect((Scene.w/2) - sizeSmall.w/2, (Scene.h/2) - sizeSmall.h/2, sizeSmall.w, sizeSmall.h);
 }
 
 function outputToText() {
@@ -152,6 +172,7 @@ function clearCanvas() {
 function draw() {
     console.log("Iter")
     clearCanvas();
+    makeRaceTrack();
 
 	for (let p of Scene.swarm) {
 	    p.draw()
