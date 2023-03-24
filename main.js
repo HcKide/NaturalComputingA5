@@ -17,7 +17,7 @@ let Scene = {
 const centerX = Scene.w / 2;
 const centerY = Scene.h / 2;
 
-const trackEnforcement = 2;
+const trackEnforcement = 5;
 
 let sizeBig = {w: 600, h: 400} // sizes for larger outer rectangle
 
@@ -43,7 +43,7 @@ class Particle{
         // multiplier that dampens the effect of cohesion, vary from 0 to 1
         this.cohesionMultiplier = 0.9;
         // regulates distances between cells in a boid, higher means larger distance
-        this.dispersionMultiplier = 200;
+        this.dispersionMultiplier = 100;
 
         this.pos = {
             x : Math.random() * Scene.w,
