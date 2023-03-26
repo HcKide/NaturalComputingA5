@@ -15,7 +15,7 @@ let Scene = {
     inSection : function() {
         let n = 0
         for (let p of this.swarm) {
-            if (enterMeasuredSection(p)) n+=1
+            if (inMeasuredSection(p)) n+=1
         }
         return n;
     }
@@ -50,7 +50,7 @@ const leftDownPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) -
 
 window.onload = function setup() {
 	console.log("Start");
-	let ParticleCount = 500;
+	let ParticleCount = 200;
 
 	createCanvas(Scene.w, Scene.h);
 	// create particles
@@ -91,6 +91,11 @@ class Particle{
         this.pos = {
             x : Math.random() * Scene.w,
             y: Math.random() * Scene.h
+        }
+
+        this.previousPos {
+            x: this.pos.x
+            y: this.pos.y
         }
 
         this.dir = {
@@ -145,10 +150,6 @@ class Particle{
         avg_d.x *= this.dispersionMultiplier * neighbours.length * 0.2;
         avg_d.y *= this.dispersionMultiplier * neighbours.length * 0.2;
 
-        if (N == 0) {
-            console.log("N is zero")
-        }
-
         // average angle calc
         let avg_angle = Math.atan2(avg_sin, avg_cos);
         avg_angle += (Math.random() - 0.5); // random noise to angle
@@ -163,6 +164,10 @@ class Particle{
         this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
         this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
 
+        // record previous position for other functions
+        this.previousPos.x = this.pos.x
+        this.previousPos.y = this.pos.y
+
         // calculate new position with direction
         this.pos.x += this.dir.x
         this.pos.y += this.dir.y
@@ -174,7 +179,7 @@ class Particle{
         if (this.pos.y < 0 ) this.pos.y += Scene.h
         if (this.pos.y > Scene.h ) this.pos.y -= Scene.h
 
-        this.entered = enterMeasuredSection(this);
+        this.entered = inMeasuredSection(this);
         if (this.entered && !this.wait) {
             this.entryTime = Date.now();
             this.wait = true;
@@ -192,7 +197,7 @@ class Particle{
 
             var density = ((this.densityNStart + this.densityNExit) / 2) / sizeMeasure.w
 
-            var text = "{id:" + this.id.toString() + ", speed:" + speed.toString() + ", density:" + density.toString() + "},"
+            var text = "{\"id\":" + this.id.toString() + ", \"speed\":" + speed.toString() + ", \"density\":" + density.toString() + "},"
             outputToText(text)
 
             this.wait = false; // reset vars
@@ -338,6 +343,7 @@ function clearCanvas() {
 }
 
 function correctExit(particle) {
+    // checks whether the particle has correctly exited the section on the right and not on top or bottom
     let particleX = particle.pos.x;
     let particleY = particle.pos.y;
 
@@ -350,7 +356,9 @@ function correctExit(particle) {
 
 }
 
-function enterMeasuredSection(particle) {
+function inMeasuredSection(particle) {
+    // checks whether a particle is in the measured section, regardless of whether it correctly entered it from the left
+    // side or not
     let particleX = particle.pos.x;
     let particleY = particle.pos.y;
 
@@ -364,9 +372,6 @@ function enterMeasuredSection(particle) {
     return false
 }
 
-function calculateDensity() {
-
-}
 
 function draw() {
     console.log("Iter")
