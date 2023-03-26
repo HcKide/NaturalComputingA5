@@ -93,8 +93,8 @@ class Particle{
             y: Math.random() * Scene.h
         }
 
-        this.previousPos {
-            x: this.pos.x
+        this.previousPos = {
+            x: this.pos.x,
             y: this.pos.y
         }
 
@@ -179,7 +179,7 @@ class Particle{
         if (this.pos.y < 0 ) this.pos.y += Scene.h
         if (this.pos.y > Scene.h ) this.pos.y -= Scene.h
 
-        this.entered = inMeasuredSection(this);
+        this.entered = correctEntry(this);
         if (this.entered && !this.wait) {
             this.entryTime = Date.now();
             this.wait = true;
@@ -354,6 +354,21 @@ function correctExit(particle) {
     }
     return false
 
+}
+
+function correctEntry(particle) {
+    /* checks correct entry of a particle into the measured sectoin
+     if a particle is currently in the measured section, and at a previous point was to the immediate left of the
+     measured section (not below or above) then the particle has entered the measured section in the correct manner
+    */
+
+    if (inMeasuredSection) {
+        if (leftUpPointMeasure.x > particle.previousPos.x && leftUpPointMeasure.y <= particle.previousPos.y
+        && leftDownPointMeasure.y >= particle.previousPos.y) {
+            return true
+        }
+    }
+    return false
 }
 
 function inMeasuredSection(particle) {
