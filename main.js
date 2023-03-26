@@ -11,6 +11,13 @@ let Scene = {
             }
         }
         return r;
+    },
+    inSection : function() {
+        let n = 0
+        for (let p of this.swarm) {
+            if (enterMeasuredSection(p)) n+=1
+        }
+        return n;
     }
 }
 
@@ -171,11 +178,19 @@ class Particle{
 
         if (this.exited && this.wait) {
             this.exitTime = Date.now();
-            var speed = sizeMeasure.w / (this.exitTime - this.entryTime)
+            var deltaT = this.exitTime - this.entryTime
+            var speed = sizeMeasure.w / deltaT
             speed = Math.round(speed * 1000) / 1000
-            this.wait = false;
-            var text = "{id:" + this.id.toString() + ", speed:" + speed.toString() + "},"
+
+            var density = (Scene.inSection()/ deltaT) / sizeMeasure.w
+
+            // values are otherwise extremely small, this makes it a bit easier to work with
+            density = Math.round(density * 100000) / 100
+
+            var text = "{id:" + this.id.toString() + ", speed:" + speed.toString() + ", density:" + density.toString() + "},"
             outputToText(text)
+
+            this.wait = false; // reset vars
         }
     }
 
