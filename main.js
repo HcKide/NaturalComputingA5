@@ -378,4 +378,20 @@ function draw() {
 	}
 }
 
-setInterval(draw, 20);
+var drawBool = true;
+
+function toggleRun() {
+    if (drawBool) {
+        drawBool = false;
+    }
+    else {
+        drawBool = true;
+    }
+}
+
+function main() {
+    if (drawBool)
+        draw()
+}
+
+setInterval(main, 20);
