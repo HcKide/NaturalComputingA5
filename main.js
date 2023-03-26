@@ -83,6 +83,11 @@ class Particle{
         this.entryTime = 0;
         this.exitTime = 0;
 
+        // density at start of entry
+        this.densityNStart = 0
+        // density at exit of entry
+        this.densityNExit = 0
+
         this.pos = {
             x : Math.random() * Scene.w,
             y: Math.random() * Scene.h
@@ -173,6 +178,7 @@ class Particle{
         if (this.entered && !this.wait) {
             this.entryTime = Date.now();
             this.wait = true;
+            this.densityNStart = Scene.inSection()
         }
         this.exited = correctExit(this);
 
@@ -182,10 +188,12 @@ class Particle{
             var speed = sizeMeasure.w / deltaT
             speed = Math.round(speed * 1000) / 1000
 
-            var density = (Scene.inSection()/ deltaT) / sizeMeasure.w
+            this.densityNExit = Scene.inSection()
+
+            var density = ((this.densityNStart + this.densityNExit) / 2) / sizeMeasure.w
 
             // values are otherwise extremely small, this makes it a bit easier to work with
-            density = Math.round(density * 100000) / 100
+            //density = Math.round(density * 100000) / 100
 
             var text = "{id:" + this.id.toString() + ", speed:" + speed.toString() + ", density:" + density.toString() + "},"
             outputToText(text)
