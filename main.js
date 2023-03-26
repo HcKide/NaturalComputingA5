@@ -50,7 +50,8 @@ const leftDownPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) -
 
 window.onload = function setup() {
 	console.log("Start");
-	let ParticleCount = 200;
+	let ParticleCount = 500;
+	document.getElementById("count").innerHTML += ParticleCount.toString();
 
 	createCanvas(Scene.w, Scene.h);
 	// create particles
