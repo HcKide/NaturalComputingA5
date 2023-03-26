@@ -23,6 +23,24 @@ let sizeBig = {w: 600, h: 400} // sizes for larger outer rectangle
 
 let sizeSmall = {w: 400, h: 250} // sizes for small inner rectangle
 
+let sizeMeasure = {w: 400, h: 75}
+
+// points of large rectangle
+const leftUpPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
+const rightUpPointLarge = {x: (Scene.w/2) + sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
+const leftDownPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) + sizeBig.h/2}
+
+// points of small rectangle
+const leftUpPointSmall = {x: (Scene.w/2) - sizeSmall.w/2, y: (Scene.h/2) - sizeSmall.h/2}
+const rightUpPointSmall = {x: (Scene.w/2) + sizeSmall.w/2, y: (Scene.h/2) - sizeSmall.h/2}
+const leftDownPointSmall = {x: (Scene.w/2) - sizeSmall.w/2, y: (Scene.h/2) + sizeSmall.h/2}
+
+// points of measured section
+const leftUpPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) - sizeBig.h/2}
+const rightUpPointMeasure = {x: (Scene.w/2) + sizeMeasure.w/2, y: (Scene.h/2) - sizeBig.h/2}
+const leftDownPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) - sizeSmall.h/2}
+
+
 window.onload = function setup() {
 	console.log("Start");
 	let ParticleCount = 400;
@@ -30,20 +48,33 @@ window.onload = function setup() {
 	createCanvas(Scene.w, Scene.h);
 	// create particles
 	for (let i = 0; i < ParticleCount; i++) {
-	    Scene.swarm.push(new Particle())
+	    Scene.swarm.push(new Particle(i+1))
 	}
 
 	draw();
 }
 
 class Particle{
-    constructor() {
+    constructor(id) {
+
+        this.id = id;
         // speed multiplier that can be adjusted also based on how often the draw function is called
         this.speedMultiplier = 2;
         // multiplier that dampens the effect of cohesion, vary from 0 to 1
         this.cohesionMultiplier = 0.9;
         // regulates distances between cells in a boid, higher means larger distance
         this.dispersionMultiplier = 100;
+
+        // boolean that indicates whether particle is currently in the measured section or not
+        this.entered = false;
+        // boolean indicating whether the particle has correctly exited the measured section
+        this.exited = false;
+
+        // indicates whether we need to wait for the particle to exit so we don't continuously record time
+        this.wait = false;
+
+        this.entryTime = 0;
+        this.exitTime = 0;
 
         this.pos = {
             x : Math.random() * Scene.w,
@@ -130,6 +161,19 @@ class Particle{
 
         if (this.pos.y < 0 ) this.pos.y += Scene.h
         if (this.pos.y > Scene.h ) this.pos.y -= Scene.h
+
+        this.entered = enterMeasuredSection(this);
+        if (this.entered && !this.wait) {
+            this.entryTime = Date.now();
+            this.wait = true;
+        }
+        this.exited = correctExit(this);
+
+        if (this.exited && this.wait) {
+            this.exitTime = Date.now();
+            var speed = sizeMeasure.w / (this.exitTime - this.entryTime)
+            this.wait = false;
+        }
     }
 
     draw() {
@@ -155,6 +199,11 @@ function makeRaceTrack() {
     ctx.fillStyle = "white"; // set the fill color
     // draw the inner rectangle
     ctx.fillRect((Scene.w/2) - sizeSmall.w/2, (Scene.h/2) - sizeSmall.h/2, sizeSmall.w, sizeSmall.h);
+
+    ctx.fillStyle = "red"; // set the fill color
+    // draw the measured section
+    ctx.fillRect((Scene.w/2) - sizeMeasure.w/2, (Scene.h/2) - sizeBig.h/2, sizeMeasure.w, sizeMeasure.h);
+
 }
 
 function clockWise(particle) {
@@ -196,16 +245,6 @@ function inTrack(particle) {
     // sees whether particle is in the racetrack
     var xPressure = 0;
     var yPressure = 0;
-
-    // in large rectangle at all
-    var leftUpPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
-    var rightUpPointLarge = {x: (Scene.w/2) + sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
-    var leftDownPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) + sizeBig.h/2}
-
-    // in small rectangle
-    var leftUpPointSmall = {x: (Scene.w/2) - sizeSmall.w/2, y: (Scene.h/2) - sizeSmall.h/2}
-    var rightUpPointSmall = {x: (Scene.w/2) + sizeSmall.w/2, y: (Scene.h/2) - sizeSmall.h/2}
-    var leftDownPointSmall = {x: (Scene.w/2) - sizeSmall.w/2, y: (Scene.h/2) + sizeSmall.h/2}
 
     // checks whether particle is within bounds of outer rectangle
     if (particle.pos.x >= leftUpPointLarge.x && particle.pos.x <= rightUpPointLarge.x &&
@@ -255,8 +294,8 @@ function inTrack(particle) {
     return [xPressure/centerX, yPressure/centerY]
 }
 
-function outputToText() {
-    document.getElementById('text').innerHTML = 'Test';
+function outputToText(text) {
+    document.getElementById('text').innerHTML += text;
 }
 
 function createCanvas(w, h) {
@@ -272,6 +311,37 @@ function clearCanvas() {
     var canvas = document.getElementById("canvas");
     var context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function correctExit(particle) {
+    let particleX = particle.pos.x;
+    let particleY = particle.pos.y;
+
+    if (leftUpPointMeasure.y <= particleY && leftDownPointMeasure.y >= particleY && rightUpPointMeasure.x <= particleX )
+    {
+        // exited correctly via right side
+        return true
+    }
+    return false
+
+}
+
+function enterMeasuredSection(particle) {
+    let particleX = particle.pos.x;
+    let particleY = particle.pos.y;
+
+    if (leftUpPointMeasure.x <= particleX && leftUpPointMeasure.y <= particleY && rightUpPointMeasure.x >= particleX
+        && leftDownPointMeasure.y >= particleY
+    )
+    {
+        // entered the measured section
+        return true
+    }
+    return false
+}
+
+function calculateDensity() {
+
 }
 
 function draw() {
