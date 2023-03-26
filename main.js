@@ -43,7 +43,7 @@ const leftDownPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) -
 
 window.onload = function setup() {
 	console.log("Start");
-	let ParticleCount = 400;
+	let ParticleCount = 500;
 
 	createCanvas(Scene.w, Scene.h);
 	// create particles
@@ -172,7 +172,10 @@ class Particle{
         if (this.exited && this.wait) {
             this.exitTime = Date.now();
             var speed = sizeMeasure.w / (this.exitTime - this.entryTime)
+            speed = Math.round(speed * 1000) / 1000
             this.wait = false;
+            var text = "{id:" + this.id.toString() + ", speed:" + speed.toString() + "},"
+            outputToText(text)
         }
     }
 
@@ -296,6 +299,7 @@ function inTrack(particle) {
 
 function outputToText(text) {
     document.getElementById('text').innerHTML += text;
+    document.getElementById('text').innerHTML += '\n';
 }
 
 function createCanvas(w, h) {
