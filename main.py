@@ -1,16 +1,21 @@
 import matplotlib.pyplot as plt
 import json
 
-with open("data.json", "r") as f:
+def plot(densities, speeds, particle_count):
+	plt.plot(densities, speeds, '.')
+	plt.ylabel("speed")
+	plt.xlabel("density")
+	plt.title(f"Fundamental Diagram of particle boids ({particle_count} particles)")
+	plt.show()
+
+with open("data200.json", "r") as f:
 	data = json.load(f)
 
-densities = [item['density'] for item in data]
-speeds = [item['speed'] for item in data]
+densities200 = [item['density'] for item in data]
+speeds200 = [item['speed'] for item in data]
 
-plt.plot(densities, speeds, '.')
-plt.ylabel("speed")
-plt.xlabel("density")
-plt.title("Fundamental Diagram of particle boids")
-plt.show()
+plot(densities200, speeds200, '200')
+
+
 
 
