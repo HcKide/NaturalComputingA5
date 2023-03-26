@@ -192,9 +192,6 @@ class Particle{
 
             var density = ((this.densityNStart + this.densityNExit) / 2) / sizeMeasure.w
 
-            // values are otherwise extremely small, this makes it a bit easier to work with
-            //density = Math.round(density * 100000) / 100
-
             var text = "{id:" + this.id.toString() + ", speed:" + speed.toString() + ", density:" + density.toString() + "},"
             outputToText(text)
 
