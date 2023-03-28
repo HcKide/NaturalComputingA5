@@ -13,6 +13,7 @@ let Scene = {
         return r;
     },
     inSection : function() {
+        // returns how many particles are in the measured section at the current time
         let n = 0
         for (let p of this.swarm) {
             if (inMeasuredSection(p)) n+=1
@@ -24,13 +25,14 @@ let Scene = {
 const centerX = Scene.w / 2;
 const centerY = Scene.h / 2;
 
+// multiplier that indicates the strength of the track enforcement
 const trackEnforcement = 5;
 
 let sizeBig = {w: 600, h: 400} // sizes for larger outer rectangle
 
 let sizeSmall = {w: 400, h: 250} // sizes for small inner rectangle
 
-let sizeMeasure = {w: 400, h: 75}
+let sizeMeasure = {w: 400, h: 75} // sizes for the measured section, coloured red in the scene
 
 // points of large rectangle
 const leftUpPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
@@ -47,7 +49,7 @@ const leftUpPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) - s
 const rightUpPointMeasure = {x: (Scene.w/2) + sizeMeasure.w/2, y: (Scene.h/2) - sizeBig.h/2}
 const leftDownPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) - sizeSmall.h/2}
 
-
+// onload function to set up all necessary elements
 window.onload = function setup() {
 	console.log("Start");
 	let ParticleCount = 500;
@@ -81,6 +83,7 @@ class Particle{
         // indicates whether we need to wait for the particle to exit so we don't continuously record time
         this.wait = false;
 
+        // timestamps for entry and exit
         this.entryTime = 0;
         this.exitTime = 0;
 
@@ -107,11 +110,9 @@ class Particle{
     }
 
     step() {
-        // if N = 0, sometimes particles will not be drawn when there are no neighbours because it tries to divide by 0 which is not possible
         var N=0;
-        var selfAngle = Math.atan2(this.dir.y, this.dir.x);
-        var avg_sin = 0 //Math.sin(selfAngle);
-        var avg_cos = 0 //Math.cos(selfAngle);
+        var avg_sin = 0
+        var avg_cos = 0
 
         var avg_p = {x:0, y:0}; // average position of neighbours
         var avg_d = {x: 0, y:0}; // average dispersion to repel particles that are too close
@@ -128,6 +129,8 @@ class Particle{
 
             // average dispersion calculation
             if (n != this) {
+                // check if n is not the same as the current particle, otherwise the vector calculation will go wrong
+                // since away will be a (0, 0) vector
                 let away = {x:(this.pos.x - n.pos.x), y: (this.pos.y - n.pos.y)}
                 let vectorLengthSq = Math.pow(away.x, 2) + Math.pow(away.y, 2)
 
@@ -218,6 +221,7 @@ class Particle{
 }
 
 function makeRaceTrack() {
+    // create the racetrack from a few rectangles
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
 
@@ -320,7 +324,7 @@ function inTrack(particle) {
         }
     }
 
-    return [xPressure/centerX, yPressure/centerY]
+    return [xPressure/centerX, yPressure/centerY] // normalize by pixel count
 }
 
 function outputToText(text) {
@@ -358,7 +362,7 @@ function correctExit(particle) {
 }
 
 function correctEntry(particle) {
-    /* checks correct entry of a particle into the measured sectoin
+    /* checks correct entry of a particle into the measured section
      if a particle is currently in the measured section, and at a previous point was to the immediate left of the
      measured section (not below or above) then the particle has entered the measured section in the correct manner
     */
@@ -390,6 +394,8 @@ function inMeasuredSection(particle) {
 
 
 function draw() {
+    // draw function that is called continuously
+
     console.log("Iter")
     clearCanvas();
     makeRaceTrack();
@@ -402,6 +408,7 @@ function draw() {
 var drawBool = true;
 
 function toggleRun() {
+    // function that is called by the pause/unpause button
     if (drawBool) {
         drawBool = false;
     }
@@ -415,4 +422,4 @@ function main() {
         draw()
 }
 
-setInterval(main, 20);
+setInterval(main, 20); // set interval of main to run
