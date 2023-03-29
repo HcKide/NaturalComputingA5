@@ -220,8 +220,75 @@ class Particle{
     }
 }
 
-function boidSubset() {
+class BoidAverageParticle extends Particle {
+    step() {
+        this.entered = correctEntry(this);
+        if (this.entered && !this.wait) {
+            this.entryTime = Date.now();
+            this.wait = true;
+            this.densityNStart = Scene.inSection()
+        }
+        this.exited = correctExit(this);
 
+        if (this.exited && this.wait) {
+            this.exitTime = Date.now();
+            var deltaT = this.exitTime - this.entryTime
+            var speed = sizeMeasure.w / deltaT
+            speed = Math.round(speed * 1000) / 1000
+
+            this.densityNExit = Scene.inSection()
+
+            var density = ((this.densityNStart + this.densityNExit) / 2) / sizeMeasure.w
+
+            var text = "{\"id\":" + this.id.toString() + ", \"speed\":" + speed.toString() + ", \"density\":" + density.toString() + "},"
+            outputToText2(text);
+
+            this.wait = false; // reset vars
+        }
+    }
+
+    draw() {
+        if (showBoidAvg) {
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+            ctx.fillStyle = "blue";
+            ctx.beginPath();
+            ctx.arc(this.pos.x, this.pos.y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        this.step();
+    }
+}
+
+function checkNeighbours(particle, particlesInBoid) {
+    var neighbours = Scene.neighbours(particle.pos);
+    for (let n of neighbours) {
+        // if particle is not in the list already, add it and check its neighbours
+        if (!particlesInBoid.includes(n)) {
+            particlesInBoid.push(n);
+            checkNeighbours(n, particlesInBoid);
+        }
+    }
+}
+
+function boidSubset() {
+    // pick a particle and see which particles belong to the same boid
+    var particle = Scene.swarm[0]; // pick the first particle
+    var particlesInBoid = [particle];
+    checkNeighbours(particle, particlesInBoid);
+
+    var averageBoidPosition = {x: 0, y: 0};
+    for (let p of particlesInBoid) {
+        averageBoidPosition.x += p.pos.x;
+        averageBoidPosition.y += p.pos.y;
+    }
+    averageBoidPosition.x /= particlesInBoid.length;
+    averageBoidPosition.y /= particlesInBoid.length;
+
+    var boidSize = particlesInBoid.length;
+    // var boidSpeed =
+    var density = Scene.inSection(); // amount of particles currently in section
+    return averageBoidPosition;
 }
 
 function makeRaceTrack() {
@@ -338,6 +405,11 @@ function outputToText(text) {
     }
 }
 
+function outputToText2(text){
+    document.getElementById('text2').innerHTML += text;
+    document.getElementById('text2').innerHTML += '\n';
+}
+
 function clearOutput() {
     document.getElementById('text').innerHTML = "";
 }
@@ -402,7 +474,6 @@ function inMeasuredSection(particle) {
     return false
 }
 
-
 function draw() {
     // draw function that is called continuously
 
@@ -413,10 +484,16 @@ function draw() {
 	for (let p of Scene.swarm) {
 	    p.draw()
 	}
+
+    let avgBoidPos = boidSubset();
+    let avgPart = new BoidAverageParticle();
+    avgPart.pos = avgBoidPos;
+    avgPart.draw();
 }
 
 var drawBool = true;
 var outputBool = true;
+var showBoidAvg = false;
 
 function toggleRun() {
     // function that is called by the pause/unpause button
@@ -425,6 +502,16 @@ function toggleRun() {
     }
     else {
         drawBool = true;
+    }
+}
+
+function toggleBoidAvg() {
+    // function that is called by the pause/unpause button
+    if (showBoidAvg) {
+        showBoidAvg = false;
+    }
+    else {
+        showBoidAvg = true;
     }
 }
 
