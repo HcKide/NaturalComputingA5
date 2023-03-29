@@ -185,14 +185,16 @@ class Particle{
 
         this.entered = correctEntry(this);
         if (this.entered && !this.wait) {
-            this.entryTime = Date.now();
+            // this.entryTime = Date.now();
+            this.entryTime = customClock;
             this.wait = true;
             this.densityNStart = Scene.inSection()
         }
         this.exited = correctExit(this);
 
         if (this.exited && this.wait) {
-            this.exitTime = Date.now();
+            // this.exitTime = Date.now();
+            this.exitTime = customClock;
             var deltaT = this.exitTime - this.entryTime
             var speed = sizeMeasure.w / deltaT
             speed = Math.round(speed * 1000) / 1000
@@ -229,7 +231,8 @@ class BoidAverageParticle extends Particle {
     step() {
         this.entered = correctEntry(this);
         if (this.entered && !this.wait) {
-            this.entryTime = Date.now();
+            // this.entryTime = Date.now();
+            this.entryTime = customClock;
             this.wait = true;
             this.densityNStart = Scene.inSection()
         }
@@ -237,7 +240,8 @@ class BoidAverageParticle extends Particle {
 
         if (this.exited && this.wait) {
             console.log("exited");
-            this.exitTime = Date.now();
+            // this.exitTime = Date.now();
+            this.exitTime = customClock;
             var deltaT = this.exitTime - this.entryTime
             var speed = sizeMeasure.w / deltaT
             speed = Math.round(speed * 1000) / 1000
@@ -496,6 +500,14 @@ const avgPart = new BoidAverageParticle(1);
 avgPart.previousPos.x = 0;
 avgPart.previousPos.y = 0;
 
+/* initially we used Date.time() but depending on the browser the simulation would run faster or slower which
+gives inaccurate results. The speed of particles would seem much slower when the system started lagging because the
+clock did not run in parallel with the simulation.
+Therefore we use a custom clock that is incremented by 1 every time the draw function is
+called.
+ */
+var customClock = 0;
+
 function draw() {
     // draw function that is called continuously
     clearCanvas();
@@ -509,6 +521,7 @@ function draw() {
     avgPart.boidSize = boidSize;
     avgPart.pos = avgPos;
     avgPart.draw();
+    customClock += 1;
 }
 
 var drawBool = true;
