@@ -221,6 +221,11 @@ class Particle{
 }
 
 class BoidAverageParticle extends Particle {
+
+    constructor(id) {
+        super(id);
+        this.boidSize = 0;
+    }
     step() {
         this.entered = correctEntry(this);
         if (this.entered && !this.wait) {
@@ -228,9 +233,10 @@ class BoidAverageParticle extends Particle {
             this.wait = true;
             this.densityNStart = Scene.inSection()
         }
-        this.exited = correctExit(this);
+        this.exited = boidExit(this); // exit check with looser conditions
 
         if (this.exited && this.wait) {
+            console.log("exited");
             this.exitTime = Date.now();
             var deltaT = this.exitTime - this.entryTime
             var speed = sizeMeasure.w / deltaT
@@ -240,7 +246,8 @@ class BoidAverageParticle extends Particle {
 
             var density = ((this.densityNStart + this.densityNExit) / 2) / sizeMeasure.w
 
-            var text = "{\"id\":" + this.id.toString() + ", \"speed\":" + speed.toString() + ", \"density\":" + density.toString() + "},"
+            var text = "{\"id\":" + this.id.toString() + ", \"speed\":" + speed.toString() + ", \"density\":" +
+                density.toString() + ", \"boidSize\":" + this.boidSize.toString() + "},"
             outputToText2(text);
 
             this.wait = false; // reset vars
@@ -271,7 +278,7 @@ function checkNeighbours(particle, particlesInBoid) {
     }
 }
 
-function boidSubset() {
+function boidCalculation() {
     // pick a particle and see which particles belong to the same boid
     var particle = Scene.swarm[0]; // pick the first particle
     var particlesInBoid = [particle];
@@ -286,9 +293,7 @@ function boidSubset() {
     averageBoidPosition.y /= particlesInBoid.length;
 
     var boidSize = particlesInBoid.length;
-    // var boidSpeed =
-    var density = Scene.inSection(); // amount of particles currently in section
-    return averageBoidPosition;
+    return [averageBoidPosition, boidSize];
 }
 
 function makeRaceTrack() {
@@ -440,7 +445,19 @@ function correctExit(particle) {
         return true
     }
     return false
+}
 
+function boidExit(particle) {
+    /* like correctExit, but for boids, which needs looser checking because for larger boids it
+     is difficult to get them to exit the measured section in a straight line, therefore this only checks
+     whether the particle has exited the measured section on the right side
+    */
+    if (rightUpPointMeasure.x <= particle.pos.x)
+    {
+        // exited via right side
+        return true
+    }
+    return false
 }
 
 function correctEntry(particle) {
@@ -474,20 +491,23 @@ function inMeasuredSection(particle) {
     return false
 }
 
+// initialize average particle
+const avgPart = new BoidAverageParticle(1);
+avgPart.previousPos.x = 0;
+avgPart.previousPos.y = 0;
+
 function draw() {
     // draw function that is called continuously
-
-    console.log("Iter")
     clearCanvas();
     makeRaceTrack();
 
 	for (let p of Scene.swarm) {
 	    p.draw()
 	}
-
-    let avgBoidPos = boidSubset();
-    let avgPart = new BoidAverageParticle();
-    avgPart.pos = avgBoidPos;
+    [avgPos, boidSize] = boidCalculation();
+    avgPart.previousPos = avgPart.pos;
+    avgPart.boidSize = boidSize;
+    avgPart.pos = avgPos;
     avgPart.draw();
 }
 
