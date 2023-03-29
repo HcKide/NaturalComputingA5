@@ -503,8 +503,7 @@ avgPart.previousPos.y = 0;
 /* initially we used Date.time() but depending on the browser the simulation would run faster or slower which
 gives inaccurate results. The speed of particles would seem much slower when the system started lagging because the
 clock did not run in parallel with the simulation.
-Therefore we use a custom clock that is incremented by 1 every time the draw function is
-called.
+Therefore, we use a custom clock that is incremented by 1 every time the draw function is called.
  */
 var customClock = 0;
 
