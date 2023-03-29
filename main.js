@@ -220,6 +220,10 @@ class Particle{
     }
 }
 
+function boidSubset() {
+
+}
+
 function makeRaceTrack() {
     // create the racetrack from a few rectangles
     var canvas = document.getElementById("canvas");
@@ -328,8 +332,10 @@ function inTrack(particle) {
 }
 
 function outputToText(text) {
-    document.getElementById('text').innerHTML += text;
-    document.getElementById('text').innerHTML += '\n';
+    if (outputBool){
+        document.getElementById('text').innerHTML += text;
+        document.getElementById('text').innerHTML += '\n';
+    }
 }
 
 function createCanvas(w, h) {
@@ -406,6 +412,7 @@ function draw() {
 }
 
 var drawBool = true;
+var outputBool = true;
 
 function toggleRun() {
     // function that is called by the pause/unpause button
@@ -414,6 +421,15 @@ function toggleRun() {
     }
     else {
         drawBool = true;
+    }
+}
+
+function toggleOutput() {
+    if (outputBool) {
+        outputBool = false;
+    }
+    else {
+        outputBool = true;
     }
 }
 
