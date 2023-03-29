@@ -338,6 +338,10 @@ function outputToText(text) {
     }
 }
 
+function clearOutput() {
+    document.getElementById('text').innerHTML = "";
+}
+
 function createCanvas(w, h) {
     var canvas = document.createElement("canvas");
     canvas.id = "canvas"
