@@ -49,10 +49,11 @@ const leftUpPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) - s
 const rightUpPointMeasure = {x: (Scene.w/2) + sizeMeasure.w/2, y: (Scene.h/2) - sizeBig.h/2}
 const leftDownPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) - sizeSmall.h/2}
 
+let ParticleCount = 1;
+
 // onload function to set up all necessary elements
 window.onload = function setup() {
 	console.log("Start");
-	let ParticleCount = 1;
 	document.getElementById("count").innerHTML += ParticleCount.toString();
 
 	createCanvas(Scene.w, Scene.h);
@@ -171,12 +172,12 @@ class Particle{
         }
 
         // update direction with all values
-        // this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
-        // this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
+        this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
+        this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
         
         // Without alignment
-        this.dir.x = cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
-        this.dir.y = cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
+        // this.dir.x = cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
+        // this.dir.y = cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
         
         // Without cohesion
         // this.dir.x = Math.cos(avg_angle) + avg_d.x + xPressure + trackPressureX*trackEnforcement;
@@ -612,7 +613,6 @@ function main() {
 }
 
 // keep track of stuff
-let ParticleCount = 1;
 let counter = 0;
 let speeds = [];
 let densities = [];
