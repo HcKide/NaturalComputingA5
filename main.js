@@ -276,7 +276,7 @@ class BoidAverageParticle extends Particle {
 
             this.wait = false; // reset vars
 
-            // loggin speed and density
+            // logging speed and density
             speeds.push(speed);
             densities.push(density);
         }
@@ -548,8 +548,8 @@ function draw() {
 }
 
 var drawBool = true;
-var outputBool = true;
-var showBoidAvg = false;
+var outputBool = false;
+var showBoidAvg = true;
 
 function toggleRun() {
     // function that is called by the pause/unpause button
@@ -620,8 +620,6 @@ function main() {
 let counter = 0;
 let speeds = [];
 let densities = [];
-// let avg_speeds = [];
-// let avg_densities = [];
 
 // averaging function
 const average = list => list.reduce((prev, curr) => prev + curr) / list.length;
