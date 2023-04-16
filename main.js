@@ -32,7 +32,7 @@ let sizeBig = {w: 600, h: 400} // sizes for larger outer rectangle
 
 let sizeSmall = {w: 400, h: 250} // sizes for small inner rectangle
 
-let sizeMeasure = {w: 200, h: 75} // sizes for the measured section, coloured red in the scene
+let sizeMeasure = {w: 400, h: 75} // sizes for the measured section, coloured red in the scene
 
 // points of large rectangle
 const leftUpPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
@@ -93,9 +93,10 @@ class Particle{
         // density at exit of entry
         this.densityNExit = 0
 
+        // for grouping particles together at start, used to generate FD
         this.pos = {
-            x : Math.random() * Scene.w * 0.1 + Scene.w * 0.5,
-            y: Math.random() * Scene.h * 0.1 + Scene.h * 0.7
+            x : Math.random() * Scene.w * 0.05 + Scene.w * 0.8,
+            y: Math.random() * Scene.h * 0.05 + Scene.h * 0.5
         }
 
         // Start closer together
@@ -605,7 +606,7 @@ function main() {
 
         // push text
         var text = "{\"speed\":" + avg_speed.toString() + ", \"density\":" +
-            avg_density.toString() + "},"
+            avg_density.toString() + "p_count:"+ ParticleCount +"},"
         outputToText2(text)
     }
     if (drawBool)
