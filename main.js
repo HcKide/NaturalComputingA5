@@ -175,7 +175,11 @@ class Particle{
         // update direction with all values
         this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
         this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
-        
+
+        /*
+        Ablation study variations below
+         */
+
         // Without alignment
         // this.dir.x = cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
         // this.dir.y = cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
@@ -187,6 +191,10 @@ class Particle{
         // Without separation
         // this.dir.x = Math.cos(avg_angle) + cohesion.x + xPressure + trackPressureX*trackEnforcement;
         // this.dir.y = Math.sin(avg_angle) + cohesion.y + yPressure + trackPressureY*trackEnforcement;
+
+        // All rules off
+        // this.dir.x = xPressure + trackPressureX*trackEnforcement;
+        // this.dir.y = yPressure + trackPressureY*trackEnforcement;
 
         // record previous position for other functions
         this.previousPos.x = this.pos.x
