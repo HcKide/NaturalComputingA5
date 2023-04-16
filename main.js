@@ -52,7 +52,7 @@ const leftDownPointMeasure = {x: (Scene.w/2) - sizeMeasure.w/2, y: (Scene.h/2) -
 // onload function to set up all necessary elements
 window.onload = function setup() {
 	console.log("Start");
-	let ParticleCount = 500;
+	let ParticleCount = 1;
 	document.getElementById("count").innerHTML += ParticleCount.toString();
 
 	createCanvas(Scene.w, Scene.h);
@@ -93,9 +93,15 @@ class Particle{
         this.densityNExit = 0
 
         this.pos = {
-            x : Math.random() * Scene.w,
-            y: Math.random() * Scene.h
+            x : Math.random() * Scene.w * 0.1 + Scene.w * 0.5,
+            y: Math.random() * Scene.h * 0.1 + Scene.h * 0.7
         }
+
+        // Start closer together
+        // this.pos = {
+        //     x : Math.random() * 0.1,
+        //     y : Math.random() * 0.1
+        // }
 
         this.previousPos = {
             x: this.pos.x,
@@ -165,12 +171,12 @@ class Particle{
         }
 
         // update direction with all values
-        this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
-        this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
+        // this.dir.x = Math.cos(avg_angle) + cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
+        // this.dir.y = Math.sin(avg_angle) + cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
         
         // Without alignment
-        // this.dir.x = cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
-        // this.dir.y = cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
+        this.dir.x = cohesion.x + avg_d.x + xPressure + trackPressureX*trackEnforcement;
+        this.dir.y = cohesion.y + avg_d.y + yPressure + trackPressureY*trackEnforcement;
         
         // Without cohesion
         // this.dir.x = Math.cos(avg_angle) + avg_d.x + xPressure + trackPressureX*trackEnforcement;
@@ -261,12 +267,16 @@ class BoidAverageParticle extends Particle {
             this.densityNExit = Scene.inSection()
 
             var density = ((this.densityNStart + this.densityNExit) / 2) / sizeMeasure.w
-
+            
             var text = "{\"id\":" + this.id.toString() + ", \"speed\":" + speed.toString() + ", \"density\":" +
                 density.toString() + ", \"boidSize\":" + this.boidSize.toString() + "},"
-            outputToText2(text);
+            // outputToText2(text);
 
             this.wait = false; // reset vars
+
+            // loggin speed and density
+            speeds.push(speed);
+            densities.push(density);
         }
     }
 
@@ -569,8 +579,48 @@ function toggleOutput() {
 }
 
 function main() {
+    counter += 1
+    if (counter >= 2100) {
+        // reset simulation with different particle count in order to get proper FD
+        counter = 0;
+        Scene.swarm = [];
+        if (ParticleCount < 10){
+            ParticleCount += 1;
+        } else {
+            ParticleCount +=5
+        }
+        document.getElementById("count").innerHTML = ParticleCount.toString();
+        for (let i = 0; i < ParticleCount; i++) {
+            Scene.swarm.push(new Particle(i+1))
+        }
+
+        // Calculate averages of simulation, becomes single point on FD
+        let avg_speed = average(speeds);
+        let avg_density = average(densities);
+
+        // reset speeds and densities
+        speeds = [];
+        densities = [];
+
+        // push text
+        var text = "{\"speed\":" + avg_speed.toString() + ", \"density\":" +
+            avg_density.toString() + "},"
+        outputToText2(text)
+    }
     if (drawBool)
         draw()
 }
 
-setInterval(main, 20); // set interval of main to run
+// keep track of stuff
+let ParticleCount = 1;
+let counter = 0;
+let speeds = [];
+let densities = [];
+// let avg_speeds = [];
+// let avg_densities = [];
+
+// averaging function
+const average = list => list.reduce((prev, curr) => prev + curr) / list.length;
+
+// set interval of main to run
+interval = setInterval(main, 1); 
