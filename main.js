@@ -587,9 +587,12 @@ function main() {
         counter = 0;
         Scene.swarm = [];
         if (ParticleCount < 10){
-            ParticleCount += 1;
-        } else {
-            ParticleCount +=5
+            ParticleCount += 2;
+        } else if (ParticleCount < 50){
+            ParticleCount += 5;
+        }
+        else {
+            ParticleCount += 10;
         }
         document.getElementById("count").innerHTML = ParticleCount.toString();
         for (let i = 0; i < ParticleCount; i++) {
@@ -606,7 +609,7 @@ function main() {
 
         // push text
         var text = "{\"speed\":" + avg_speed.toString() + ", \"density\":" +
-            avg_density.toString() + "p_count:"+ ParticleCount +"},"
+            avg_density.toString() + ", \"p_count\": "+ ParticleCount +"},"
         outputToText2(text)
     }
     if (drawBool)
