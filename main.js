@@ -32,7 +32,7 @@ let sizeBig = {w: 600, h: 400} // sizes for larger outer rectangle
 
 let sizeSmall = {w: 400, h: 250} // sizes for small inner rectangle
 
-let sizeMeasure = {w: 400, h: 75} // sizes for the measured section, coloured red in the scene
+let sizeMeasure = {w: 200, h: 75} // sizes for the measured section, coloured red in the scene
 
 // points of large rectangle
 const leftUpPointLarge = {x: (Scene.w/2) - sizeBig.w/2, y: (Scene.h/2) - sizeBig.h/2}
